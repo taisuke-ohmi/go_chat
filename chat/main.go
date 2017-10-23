@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"go_chat/trace"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -14,6 +16,12 @@ import (
 	"github.com/stretchr/gomniauth/providers/google"
 	"github.com/stretchr/objx"
 )
+
+var avatars Avatar = TryAvatars{
+	UseFileSystemAvatar,
+	UseAuthAvatar,
+	UseGravatar,
+}
 
 type templateHandler struct {
 	once     sync.Once
@@ -45,7 +53,7 @@ func main() {
 		google.New("245464274308-2b5gbimpleg36cc1jfbo9ifr63lllgab.apps.googleusercontent.com", "oW2xKoLU3ysj9fbYPoo-ekaV", "http://localhost:8080/auth/callback/google"),
 	)
 	r := newRoom(UseFileSystemAvatar)
-	// r.tracer = trace.New(os.Stdout)
+	r.tracer = trace.New(os.Stdout)
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.Handle("/room", r)
